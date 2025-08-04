@@ -47,6 +47,17 @@ export const productEndpoints = {
 };
 
 /**
+ * Category endpoints
+ */
+export const categoryEndpoints = {
+  list: getApiUrl('/categories'),
+  details: (categoryId: string) => getApiUrl(`/categories/${categoryId}`),
+  create: getApiUrl('/categories'),
+  update: (categoryId: string) => getApiUrl(`/categories/${categoryId}`),
+  delete: (categoryId: string) => getApiUrl(`/categories/${categoryId}`),
+};
+
+/**
  * Order endpoints
  */
 export const orderEndpoints = {
@@ -95,6 +106,7 @@ export const endpoints = {
   auth: authEndpoints,
   users: userEndpoints,
   products: productEndpoints,
+  categories: categoryEndpoints,
   orders: orderEndpoints,
   customers: customerEndpoints,
   dashboard: dashboardEndpoints,

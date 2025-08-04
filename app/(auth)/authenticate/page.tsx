@@ -18,7 +18,7 @@ function AuthContent() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const { visitorId, result } = useFingerprint();
-  const { isAuthenticated, isLoading: authLoading } = useAuthContext();
+  const { isAuthenticated, isLoading: authLoading, refreshProfile } = useAuthContext();
   
   // Get the current step from URL parameters
   const type = searchParams.get('type');
@@ -158,6 +158,9 @@ function AuthContent() {
     setIsLoading(true);
     try {
       const response = await login(emailOrPhone, password, deviceInfo);
+      // Fetch user profile immediately after successful login
+      await refreshProfile();
+      
       // Handle successful login
       toast({
         title: "Login successful",
@@ -233,6 +236,9 @@ function AuthContent() {
     setIsLoading(true);
     try {
       const response = await verifyOtp(emailOrPhone, otp, deviceInfo);
+      // Fetch user profile immediately after successful OTP verification
+      await refreshProfile();
+      
       toast({
         title: "Authentication successful",
         description: "You have been logged in successfully",

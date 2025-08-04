@@ -1,13 +1,25 @@
 'use client';
 
+import React from 'react';
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthContext } from '@/lib/providers/AuthProvider';
 import { logout } from '@/lib/api/auth';
 import { useRouter } from 'next/navigation';
+import { ImageUpload } from '@/components/ui/image-upload';
+import { useState } from 'react';
+import { useToast } from '@/components/ui/use-toast';
+import { MultiImageUpload } from "@/components/ui/multi-image-upload";
+import { LandingPage } from '@/components/ui/landing-page';
+import { Shield, Lock, Users, Settings, ArrowRight, Mail, Phone } from 'lucide-react';
 export default function Home() {
   const { user, isAuthenticated, isLoading, refreshProfile } = useAuthContext();
   const router = useRouter();
+  const { toast } = useToast();
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   
   const handleLogout = async () => {
     try {
@@ -18,6 +30,38 @@ export default function Home() {
     } catch (error) {
       console.error('Logout failed:', error);
     }
+  };
+  
+  // Simulate image upload to server
+  const handleImageUpload = async (file: File): Promise<string> => {
+    // This would normally be an API call to upload the image
+    return new Promise((resolve) => {
+      // Simulate network delay
+      setTimeout(() => {
+        // Create a local URL for the file
+        const imageUrl = URL.createObjectURL(file);
+        setUploadedImage(imageUrl);
+        toast({
+          title: 'Image Uploaded',
+          description: `Successfully uploaded ${file.name}`,
+        });
+        resolve(imageUrl);
+      }, 1500);
+    });
+  };
+  
+  // Simulate multiple images upload to server
+  const handleMultiImageUpload = async (files: File[]): Promise<string[]> => {
+    // This would normally be an API call to upload multiple images
+    return new Promise((resolve) => {
+      // Simulate network delay
+      setTimeout(() => {
+        // Create local URLs for the files
+        const imageUrls = files.map(file => URL.createObjectURL(file));
+        setUploadedImages(prev => [...prev, ...imageUrls]);
+        resolve(imageUrls);
+      }, 2000);
+    });
   };
   
   if (isLoading) {
@@ -32,7 +76,7 @@ export default function Home() {
   }
   
   return (
-    <div className="container py-8">
+    <div className={isAuthenticated && user ? "container py-8" : "w-full"}>
       {isAuthenticated && user ? (
         <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
           <div className="flex justify-between items-center mb-6">
@@ -43,6 +87,19 @@ export default function Home() {
             <div className="bg-gray-50 p-4 rounded-md">
               <h2 className="text-xl font-semibold mb-4">User Profile</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2 flex flex-col items-center mb-4">
+                  <ImageUpload
+                    initialImage={profileImage || user.profileImage}
+                    onImageUpload={async (file) => {
+                      const url = await handleImageUpload(file);
+                      setProfileImage(url as string);
+                      return url;
+                    }}
+                    previewSize="md"
+                    dropzoneText="Upload profile picture"
+                    buttonText="Change Photo"
+                  />
+                </div>
                 <div>
                   <p className="text-sm text-gray-500">Name</p>
                   <p className="font-medium">{user.name || 'Not provided'}</p>
@@ -73,22 +130,76 @@ export default function Home() {
                 </div>
               </div>
             </div>
+            
+            <div className="bg-gray-50 p-4 rounded-md">
+              <h2 className="text-xl font-semibold mb-4">Image Upload Demo</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="text-md font-medium mb-2">Standard Upload</h3>
+                  <ImageUpload 
+                    onImageUpload={handleImageUpload}
+                    maxSizeMB={2}
+                    previewSize="md"
+                  />
+                </div>
+                <div>
+                  <h3 className="text-md font-medium mb-2">Custom Aspect Ratio (16:9)</h3>
+                  <ImageUpload 
+                    onImageUpload={handleImageUpload}
+                    aspectRatio="16/9"
+                    previewSize="full"
+                    dropzoneText="Upload landscape image"
+                  />
+                </div>
+                <div>
+                  <h3 className="text-md font-medium mb-2">Small Preview</h3>
+                  <ImageUpload 
+                    onImageUpload={handleImageUpload}
+                    previewSize="sm"
+                    buttonText="Upload Small text"
+                  />
+                </div>
+                <div>
+                  <h3 className="text-md font-medium mb-2">Large Preview</h3>
+                  <ImageUpload 
+                    onImageUpload={handleImageUpload}
+                    previewSize="lg"
+                    buttonText="Upload Large"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-gray-50 p-4 rounded-md">
+              <h2 className="text-xl font-semibold mb-4">Multi-Image Upload Demo</h2>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-md font-medium mb-2">Upload Multiple Images</h3>
+                  <MultiImageUpload 
+                    onImagesUpload={handleMultiImageUpload}
+                    initialImages={uploadedImages}
+                    maxSizeMB={2}
+                    previewSize="md"
+                    maxImages={5}
+                    maxImagesText="You can upload a maximum of 5 images"
+                  />
+                </div>
+                <div>
+                  <h3 className="text-md font-medium mb-2">Gallery Style (16:9)</h3>
+                  <MultiImageUpload 
+                    onImagesUpload={handleMultiImageUpload}
+                    aspectRatio="16/9"
+                    previewSize="sm"
+                    dropzoneText="Upload gallery images"
+                    maxImages={10}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center min-h-[80vh]">
-          <h1 className="text-4xl font-bold mb-4">Landson Management</h1>
-          <p className="text-xl mb-6">
-            <Button>
-              Welcome to Landson Management Software
-            </Button>
-          </p>
-          <Link href="/authenticate?type=LOGIN&utm_source=direct">
-            <Button variant="secondary" className="mt-4">
-              Sign In / Register
-            </Button>
-          </Link>
-        </div>
+        <LandingPage onSignInClick={() => window.location.href = '/authenticate?type=LOGIN&utm_source=direct'} />
       )}
     </div>
   );

@@ -19,6 +19,7 @@ import {
   ChevronRightIcon,
   MenuIcon
 } from '@/lib/icons/svg';
+import { FolderKanban } from 'lucide-react';
 
 type NavItem = {
   title: string;
@@ -33,6 +34,13 @@ const navItems: NavItem[] = [
     title: 'Home',
     href: '/',
     icon: DashboardIcon,
+  },
+  {
+    title:'Category',
+    href:'/category',
+    icon:FolderKanban ,
+    module:'categories',
+    requiresAuth: true,
   },
   {
     title: 'Users',
@@ -130,6 +138,8 @@ export function Sidebar({ onCollapse }: SidebarProps) {
     try {
       await logout();
       await refreshProfile();
+      // Redirect to login page after logout
+      window.location.href = '/authenticate?type=LOGIN&utm_source=direct';
     } catch (error) {
       console.error('Logout failed:', error);
     }

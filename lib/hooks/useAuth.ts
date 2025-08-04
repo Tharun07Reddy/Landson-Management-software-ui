@@ -96,8 +96,8 @@ export function useAuth() {
             permissions: []
           });
           
-          // Redirect to login page
-          window.location.href = '/authenticate?type=LOGIN&utm_source=direct';
+          // Don't redirect here - let the component handle redirection
+          // This prevents redirect loops on authentication pages
           return;
         }
       }

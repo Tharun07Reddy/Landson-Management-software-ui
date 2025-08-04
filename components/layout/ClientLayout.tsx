@@ -4,6 +4,7 @@ import { ReactNode, useState, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
+import { useAuthContext } from '@/lib/providers/AuthProvider';
 
 interface ClientLayoutProps {
   children: ReactNode;
@@ -11,6 +12,7 @@ interface ClientLayoutProps {
 
 export function ClientLayout({ children }: ClientLayoutProps) {
   const pathname = usePathname();
+  const { isAuthenticated } = useAuthContext();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   
@@ -31,7 +33,10 @@ export function ClientLayout({ children }: ClientLayoutProps) {
   // Don't show sidebar on authentication pages
   const isAuthPage = pathname?.startsWith('/authenticate');
   
-  if (isAuthPage) {
+  // Hide sidebar for unauthenticated users on root page
+  const hideSidebar = pathname === '/authenticate' || (!isAuthenticated && pathname === '/');
+  
+  if (hideSidebar) {
     return <>{children}</>;
   }
   

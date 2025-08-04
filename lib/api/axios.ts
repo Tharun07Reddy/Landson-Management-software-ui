@@ -79,17 +79,14 @@ const createApiClient = (config?: ApiRequestConfig): AxiosInstance => {
             // Retry the original request with the new token
             return axiosInstance(originalRequest);
           } else {
-            // If refresh failed, redirect to login page
-            if (typeof window !== 'undefined') {
-              window.location.href = '/authenticate?type=LOGIN&utm_source=direct';
-            }
+            // Don't redirect here - let the component handle redirection
+            // This prevents redirect loops on authentication pages
+            console.error('Token refresh failed');
           }
         } catch (refreshError) {
           console.error('Error refreshing token:', refreshError);
-          // If refresh fails, redirect to login page
-          if (typeof window !== 'undefined') {
-            window.location.href = '/authenticate?type=LOGIN&utm_source=direct';
-          }
+          // Don't redirect here - let the component handle redirection
+          // This prevents redirect loops on authentication pages
         }
       }
 

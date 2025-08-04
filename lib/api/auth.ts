@@ -116,11 +116,28 @@ export const verifyOtp = async (emailOrPhone: string, otp: string, deviceInfo?: 
  * Logout the current user
  */
 export const logout = async () => {
+  // Get the refresh token and device ID before clearing localStorage
+  const refreshToken = localStorage.getItem('refresh_token');
+  
+  // Get device ID from fingerprint if available
+  let deviceId = null;
+  try {
+    // Try to get the device ID from localStorage if it was cached by the fingerprint service
+    const fingerprintData = localStorage.getItem('device_fingerprint');
+    if (fingerprintData) {
+      const parsedData = JSON.parse(fingerprintData);
+      deviceId = parsedData.visitorId;
+    }
+  } catch (error) {
+    console.error('Error retrieving device ID:', error);
+  }
+  
   // Clear tokens from localStorage
   localStorage.removeItem('auth_token');
   localStorage.removeItem('refresh_token');
   
-  return apiClient.post(authEndpoints.logout);
+  // Send logout request with refreshToken and deviceId
+  return apiClient.post(authEndpoints.logout, { refreshToken, deviceId });
 };
 
 /**
@@ -137,8 +154,7 @@ export const getProfile = async () => {
         // Retry the profile request with the new token
         return await apiClient.get(userEndpoints.profile);
       } else {
-        // Redirect to authentication page if token refresh failed
-        window.location.href = '/authenticate?type=LOGIN&utm_source=direct';
+        // Don't redirect here - throw error and let component handle redirection
         throw new Error('Authentication required');
       }
     }
@@ -191,8 +207,7 @@ export const getUserPermissions = async () => {
         // Retry the permissions request with the new token
         return await apiClient.get(userEndpoints.permissions);
       } else {
-        // Redirect to authentication page if token refresh failed
-        window.location.href = '/authenticate?type=LOGIN&utm_source=direct';
+        // Don't redirect here - throw error and let component handle redirection
         throw new Error('Authentication required');
       }
     }
